@@ -28,6 +28,27 @@ class TodoController extends Controller
 
         return response()->json($todo, 201);
     }
+    public function store(Request $request)
+    {
+        $contents = $request->validate([
+            'todo' => 'required|max:255',
+            'file' => 'mimes:jpg,bmp,png,pdf'
+        ]);
+        $contents['completed'] = false;
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $path = $file->store("public/files");
+            $contents['file'] = $path;
+        } else {
+            $contents['file'] = null;
+        }
+
+        $user = $request->user();
+        $todo = $user->todos()->create($contents);
+
+        return response()->json($todo, 201);
+    }
 
     public function update(Request $request)
     {
