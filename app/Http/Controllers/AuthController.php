@@ -2,20 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $contents = $request->validate([
-            'email' => 'required|exists:users,email',
-            'password' => 'required'
-        ]);
-
-        if (Auth::attempt($contents)) {
+        // request validation done via Form Request Validation
+        if (Auth::attempt($request->validated())) {
             $user = $request->user();
             $token = $user->createToken('authToken');
 
