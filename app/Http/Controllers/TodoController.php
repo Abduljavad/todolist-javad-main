@@ -15,25 +15,28 @@ class TodoController extends Controller
         $todos = $user->todos()->get();
         return response()->json($todos);
     }
+    // removed duplicate function
+    // public function store(Request $request)
+    // {
+    //     $contents = $request->validate([
+    //         'todo' => 'required|max:255',
+    //     ]);
+    //     $contents['completed'] = false;
 
+    //     $user = $request->user();
+    //     $todo = $user->todos()->create($contents);
+
+    //     return response()->json($todo, 201);
+    // }
     public function store(Request $request)
     {
-        $contents = $request->validate([
-            'todo' => 'required|max:255',
-        ]);
-        $contents['completed'] = false;
 
-        $user = $request->user();
-        $todo = $user->todos()->create($contents);
-
-        return response()->json($todo, 201);
-    }
-    public function store(Request $request)
-    {
+        // validation must be form request validation
         $contents = $request->validate([
             'todo' => 'required|max:255',
             'file' => 'mimes:jpg,bmp,png,pdf'
         ]);
+        // this value can be set within the migration itself ->default(false);
         $contents['completed'] = false;
 
         if ($request->hasFile('file')) {
@@ -41,31 +44,21 @@ class TodoController extends Controller
             $path = $file->store("public/files");
             $contents['file'] = $path;
         } else {
-            $contents['file'] = null;
+            $contents['file'] = null; // no need to set it as null  this value can be set within the migration itself ->nullable
         }
 
         $user = $request->user();
         $todo = $user->todos()->create($contents);
 
-        return response()->json($todo, 201);
+        return response()->json($todo, 201); // keep response msgs in a same manner
     }
 
-    public function update(Request $request)
+    public function update(Request $request, Todo $todo)
     {
-        try {
-            $todo = Todo::findOrFail($request->todoId);
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Todo Not Found'
-            ], 404);
+        if(!$this->checkAuth){
+            // return response()->json(//message);
         }
-
-        if ($todo->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 401);
-        }
-
+        //  add  functionality to update todo 
         $contents = $request->validate([
             'completed' => 'required|boolean',
         ]);
@@ -74,26 +67,23 @@ class TodoController extends Controller
         return response()->json($todo);
     }
 
-    public function destroy(Request $request)
+    public function destroy(Todo $todo)
     {
-        try {
-            $todo = Todo::findOrFail($request->todoId);
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => 'Todo Not Found'
-            ], 404);
+        // check auth
+        if(!$this->checkAuth){
+            // return response()->json(//message);
         }
-
-        if ($todo->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 401);
-        }
-
         $todo->delete();
-
         return response()->json([
             'message' => 'Todo Deleted'
         ], 204);
+    }
+
+    private function checkAuth($todo){
+        if(auth()->user()->id === $todo->user_id){
+            return true;
+        }
+        return false;
+
     }
 }

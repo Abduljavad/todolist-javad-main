@@ -32,6 +32,6 @@ Route::group([
 ], function () {
     Route::get('/', [TodoController::class, 'index']);
     Route::post('/', [TodoController::class, 'store']);
-    Route::put('/{todoId}', [TodoController::class, 'update']);
-    Route::delete('/{todoId}', [TodoController::class, 'destroy']);
+    Route::put('/{todo}', [TodoController::class, 'update']);
+    Route::delete('/{todo}', [TodoController::class, 'destroy']);
 });
