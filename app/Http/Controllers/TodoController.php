@@ -53,15 +53,10 @@ class TodoController extends Controller
         return response()->json($todo, 201); // keep response msgs in a same manner
     }
 
-    public function update(Request $request)
+    public function update(Request $request, Todo $todo)
     {
-        // removed try catch
-
-        $todo = Todo::findOrFail($request->todoId);
-        if ($todo->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 401);
+        if(!$this->checkAuth){
+            // return response()->json(//message);
         }
         //  add  functionality to update todo 
         $contents = $request->validate([
@@ -72,19 +67,23 @@ class TodoController extends Controller
         return response()->json($todo);
     }
 
-    public function destroy(Request $request)
+    public function destroy(Todo $todo)
     {
-        $todo = Todo::findOrFail($request->todoId);
-        if ($todo->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 401);
+        // check auth
+        if(!$this->checkAuth){
+            // return response()->json(//message);
         }
-
         $todo->delete();
-
         return response()->json([
             'message' => 'Todo Deleted'
         ], 204);
+    }
+
+    private function checkAuth($todo){
+        if(auth()->user()->id === $todo->user_id){
+            return true;
+        }
+        return false;
+
     }
 }
